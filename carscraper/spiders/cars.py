@@ -28,6 +28,12 @@ class CarsSpider(scrapy.Spider):
                 headers = block.css('th::text').extract()
                 values = block.css('td::text').extract()
 
+                if i == 3:
+                    entity.update({
+                        'additional_info': values[1]
+                    })
+                    continue
+
                 entity.update(dict(zip(headers, values)))
 
             yield entity
