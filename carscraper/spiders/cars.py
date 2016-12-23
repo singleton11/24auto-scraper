@@ -7,7 +7,7 @@ class CarsSpider(scrapy.Spider):
     name = 'cars'
     start_urls = ['http://www.24auto.ru/board/cars/']
 
-    base_url = 'http://www.24auto.ru/'
+    base_url = 'http://www.24auto.ru'
 
     def parse(self, response):
         selector = response.css('.board_table__row::attr(href)')
@@ -15,12 +15,18 @@ class CarsSpider(scrapy.Spider):
         if len(selector):
             for link in selector:
                 yield scrapy.Request(
-                    url='{base_url}/{path}'.format(
+                    url='{base_url}{path}'.format(
                         base_url=self.base_url,
-                        path=link.extract())
-                    ,
+                        path=link.extract()),
                     callback=self.parse
                 )
+            yield scrapy.Request(
+                url='{base_url}/{path}'.format(
+                    base_url=self.base_url,
+                    path=response.css('.paging__next::attr(href)').extract()[0]
+                ),
+                callback=self.parse
+            )
         else:
             entity = {}
 
