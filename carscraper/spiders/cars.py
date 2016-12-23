@@ -24,10 +24,12 @@ class CarsSpider(scrapy.Spider):
         else:
             entity = {}
 
+            # Store general data
             for i, block in enumerate(response.css('.card_table')):
                 headers = block.css('th::text').extract()
                 values = block.css('td::text').extract()
 
+                # Additional info is not matched to general pattern
                 if i == 3:
                     entity.update({
                         'additional_info': values[1]
@@ -35,5 +37,28 @@ class CarsSpider(scrapy.Spider):
                     continue
 
                 entity.update(dict(zip(headers, values)))
+
+            # Store price
+            entity.update({
+                'price': int(''.join(
+                    response.css('.card_block__price::text').extract()
+                )[:-5])
+            })
+
+            # Store configuration
+
+            configuration = {}
+
+            for block in response.css('.card_configuration__group'):
+                headers = block.css('h6::text').extract()
+                values = []
+                for ul in block.css('ul'):
+                    values.append(ul.css('li::text').extract())
+
+                configuration.update(dict(zip(headers, values)))
+
+            entity.update({
+                'configuration': configuration
+            })
 
             yield entity
